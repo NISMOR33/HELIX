@@ -1,0 +1,346 @@
+@import "./tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Police de marque : Plus Jakarta Sans (variable 200-800) ------------- */
+/*
+ * Satoshi remplacée le 28/09/2026 (décidé par Medhi) : sa licence, l'ITF Free
+ * Font License, interdit de la diffuser par un dépôt public ou avec un
+ * logiciel redistribué (SECURITE.md § 39). Plus Jakarta Sans est sous SIL Open
+ * Font License 1.1 (public/fonts/OFL-plus-jakarta-sans.txt) : fichiers tirés
+ * de @fontsource-variable/plus-jakarta-sans 5.3.0, latin et latin étendu.
+ */
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+  font-style: normal;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/fonts/plus-jakarta-sans-latin-ext.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+  font-style: normal;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* Repli calé sur Arial le temps du chargement ; réglages approchés, pas mesurés. */
+@font-face {
+  font-family: "Plus Jakarta Sans Fallback";
+  src: local("Arial");
+  ascent-override: 96%;
+  descent-override: 30%;
+  line-gap-override: 0%;
+  size-adjust: 106%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "ss01", "cv01";
+    /* Un mot plus long que sa place (adresse, jeton, chemin) passe à la ligne au lieu de sortir de l'écran. */
+    overflow-wrap: break-word;
+  }
+
+  /*
+   * Les erreurs, coupées n'importe où s'il le faut (29/09/2026) : OpenAI
+   * renvoie une clé masquée d'une centaine d'étoiles sans espace, et dans une
+   * boîte en flex, `break-word` ne suffit pas à la retenir dans sa bulle.
+   */
+  [role="alert"] {
+    overflow-wrap: anywhere;
+  }
+
+  /*
+   * Focus clavier : discret et aux couleurs de la marque, et seulement quand la
+   * personne navigue au clavier (`data-saisie`, lib/modaliteSaisie.ts). Avec
+   * `:focus-visible` seul, un bouton qui reprenait le focus après un menu ou
+   * une fenêtre gardait un cadre vert après un clic (Windows, 29/09/2026).
+   */
+  :where(a, button, select, [tabindex], input[type="checkbox"], input[type="radio"], input[type="range"], input[type="file"], input[type="color"], input[type="button"], input[type="submit"]):focus-visible {
+    @apply outline-none;
+  }
+  :root[data-saisie="clavier"] :where(a, button, select, [tabindex], input[type="checkbox"], input[type="radio"], input[type="range"], input[type="file"], input[type="color"], input[type="button"], input[type="submit"]):focus-visible {
+    @apply ring-2 ring-accent/50 ring-offset-1 ring-offset-background;
+  }
+
+  /*
+   * Les champs texte, non (vu par Medhi le 28/09/2026 : un rectangle vert autour
+   * du titre d'une nouvelle tâche, jusque sous la croix de la fenêtre). Un champ
+   * texte est `:focus-visible` même au clic, contrairement à un bouton ; ceux des
+   * formulaires marquent déjà leur focus par leur bordure (Field.tsx), et les
+   * champs sans cadre (titres, recherche) par leur curseur.
+   */
+  :where(input):focus-visible {
+    @apply outline-none;
+  }
+
+  /*
+   * Les zones de saisie multiligne vivent deja dans une carte qui marque le
+   * focus (voir .composer-surface) : leur ajouter un anneau dessinerait un
+   * rectangle en trop.
+   */
+  :where(textarea):focus-visible {
+    @apply outline-none ring-0;
+  }
+
+  /*
+   * Les en-têtes de tableau suivent l'alignement de leur ligne. Le navigateur
+   * les centre tant que la ligne ne demande pas autre chose, et `text-start`,
+   * qui est la valeur par défaut, ne compte pas pour lui : depuis le passage
+   * de `text-left` à `text-start` (sens d'écriture), « Nom », « Modèle » ou
+   * « Document » flottaient au milieu de leur colonne, dans toutes les langues
+   * (vu à l'écran le 30/09/2026 : Fichiers, bases de connaissances, Mon usage,
+   * comparaison des modèles).
+   */
+  :where(th) {
+    text-align: inherit;
+  }
+
+  /*
+   * Sens d'écriture (30/09/2026). L'arabe s'écrit de droite à gauche :
+   * `dir="rtl"` est posé sur <html> par src/lib/i18n.ts, et la mise en page
+   * suit parce qu'elle est écrite en propriétés logiques (ms-, pe-, start-,
+   * text-start). Restent trois choses que les propriétés logiques ne règlent
+   * pas, toutes sous `[dir="rtl"]` : rien ne change dans les six langues qui
+   * s'écrivent de gauche à droite.
+   *
+   * 1. Ce qui est technique reste de gauche à droite : code, chemins,
+   *    commandes, adresses, jetons, numéros de version. Un chemin lu à l'envers
+   *    (« Helix/Application Support/~ ») ne se recopie pas.
+   */
+  /*
+   * Un bloc préformaté sans police de code (trace d'un outil, rapport à
+   * envoyer) mêle des phrases et du technique : chaque ligne prend le sens de
+   * son premier mot (`plaintext`), une ligne arabe part de la droite, une
+   * commande de la gauche.
+   */
+  [dir="rtl"] :where(pre:not([dir])) {
+    direction: ltr;
+    unicode-bidi: plaintext;
+    text-align: start;
+  }
+  [dir="rtl"] :where(code, kbd, samp, .font-mono) {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+  [dir="rtl"] :where(pre.font-mono, pre[dir="ltr"]) {
+    text-align: left;
+  }
+  /* Adresses, mots de passe, numéros : tapés de gauche à droite, rangés du côté où la ligne commence. */
+  [dir="rtl"] :where(input:is([type="url"], [type="email"], [type="password"], [type="tel"], [type="number"])) {
+    direction: ltr;
+    text-align: right;
+  }
+  /* 2. Les icônes qui montrent une direction : plus bas, hors de `@layer` (voir « Icônes directionnelles »). */
+  /*
+   * Les graphiques restent de gauche à droite : le temps s'y lit ainsi, et
+   * `text-anchor` suit le sens de la page (vu à l'écran le 30/09/2026 : les
+   * dates de l'axe de « Mon usage » sortaient du cadre, coupées).
+   */
+  [dir="rtl"] :where(svg) {
+    direction: ltr;
+  }
+  /*
+   * 3. L'écriture arabe est liée : un espacement entre les lettres
+   *    (`tracking-wide` des petits titres en capitales) la découpe en lettres
+   *    isolées. Les capitales n'y existent pas non plus.
+   */
+  :root:lang(ar) * {
+    letter-spacing: 0 !important;
+  }
+
+  /* Barres de defilement discretes. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-neutral-80;
+    background-clip: padding-box;
+    border: 3px solid transparent;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neutral-70;
+    background-clip: padding-box;
+    border: 3px solid transparent;
+  }
+}
+
+/*
+ * Icônes directionnelles, de droite à gauche (30/09/2026). Hors de `@layer` :
+ * Tailwind y retire les règles dont les classes ne figurent pas dans le code,
+ * et `lucide-chevron-left` n'y figure pas (c'est lucide-react qui la pose).
+ * Les icônes qui montrent une direction se retournent : « retour » pointe
+ * vers la droite, « suivant » vers la gauche, la barre latérale se dessine
+ * à droite. Par `scale`, et non `transform` : un chevron qui tourne quand
+ * sa rubrique s'ouvre (`rotate-90`) garde sa rotation. Les icônes sans
+ * direction (coche, croix, engrenage, flèche d'envoi vers le haut) ne sont
+ * pas touchées.
+ */
+[dir="rtl"] :where(.lucide-chevron-left, .lucide-chevron-right, .lucide-arrow-left, .lucide-arrow-right, .lucide-send, .lucide-log-in, .lucide-log-out, .lucide-panel-left, .lucide-panel-left-close, .lucide-panel-left-open, .lucide-panel-right, .lucide-corner-left-up, .lucide-list-tree) {
+  scale: -1 1;
+}
+
+@keyframes popover {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Animation discrete du mark (helice) : flottement + leger balancement. */
+@keyframes logo-helix {
+  0% {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(1.5deg);
+  }
+  100% {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .animate-logo {
+    animation: logo-helix 4s ease-in-out infinite;
+    transform-origin: center;
+    will-change: transform;
+  }
+}
+
+/* center-aligned popovers must preserve their horizontal centering while animating */
+.popover-center {
+  animation: popover-center 120ms ease-out;
+}
+@keyframes popover-center {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer utilities {
+  /*
+   * Place réservée aux commandes de fenêtre du système (macOS les fait flotter
+   * au-dessus du contenu quand la barre de titre est masquée). Sans effet dans
+   * un navigateur, où il n'y a rien à contourner.
+   */
+  .titlebar-inset {
+    padding-top: 0.75rem;
+  }
+  :root[data-titre="flottant"] .titlebar-inset {
+    /* Les pastilles occupent la bande 16-28 px : on démarre franchement dessous. */
+    padding-top: 2.5rem;
+  }
+
+  /*
+   * Barre de défilement discrète pour la navigation latérale : le contenu doit
+   * rester atteignable sur une fenêtre courte sans qu'une barre grise vienne
+   * couper le rail en deux.
+   */
+  .scrollbar-discret {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-discret::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-discret::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 3px;
+  }
+  .scrollbar-discret::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* La bande de titre déplace la fenêtre ; les commandes restent cliquables. */
+  :root[data-titre="flottant"] .titlebar-drag {
+    -webkit-app-region: drag;
+  }
+  :root[data-titre="flottant"] .titlebar-drag button,
+  :root[data-titre="flottant"] .titlebar-drag a,
+  :root[data-titre="flottant"] .titlebar-drag input {
+    -webkit-app-region: no-drag;
+  }
+  .fenetre-poignee {
+    display: none;
+  }
+  :root[data-titre="flottant"] .fenetre-poignee {
+    display: block;
+    -webkit-app-region: drag;
+  }
+  /* Une commande posée sur la poignée reste une commande, jamais une zone de glisser. */
+  :root[data-desktop="1"] :is(button, a, input, textarea, select, [role="button"], [role="dialog"]) {
+    -webkit-app-region: no-drag;
+  }
+
+  /*
+   * Logo de marque : un tracé noir sur fond transparent (le visuel livré était
+   * sur blanc opaque ; `scripts/icones/marque-transparente.mjs` en a fait de la
+   * vraie transparence le 30/09/2026). En thème sombre, le tracé est inversé
+   * en blanc. Avant, le blanc était effacé par un mélange de calques
+   * (`multiply`, puis `screen` en sombre) : un carré gris restait autour du
+   * logo sous Windows en thème sombre, là où le navigateur isole le calque.
+   */
+  :root[data-theme="sombre"] .logo-marque {
+    filter: invert(1);
+  }
+
+  /*
+   * Logos des services et des fournisseurs (LogoMarque) : la société livre
+   * souvent un dessin pour fond clair et un autre pour fond sombre (GitHub,
+   * X, Vercel en blanc). Les deux sont posés, le thème en montre un. Pas de
+   * filtre ni d'inversion ici : les chartes interdisent de recolorer un logo.
+   */
+  .marque-sombre {
+    display: none;
+  }
+  :root[data-theme="sombre"] .marque-claire {
+    display: none;
+  }
+  :root[data-theme="sombre"] .marque-sombre {
+    display: block;
+  }
+  /*
+   * Logo sombre sans version pour fond sombre (Square, OVHcloud, PayPal ;
+   * troisième tournée du 28/09/2026) : un fond clair derrière lui, en thème
+   * sombre seulement. L'anneau (box-shadow) déborde sans changer la taille de
+   * la ligne ; le dessin, lui, n'est pas touché.
+   */
+  .marque-pastille {
+    border-radius: 4px;
+  }
+  :root[data-theme="sombre"] .marque-pastille {
+    background-color: hsl(var(--pastille-marque));
+    box-shadow: 0 0 0 2px hsl(var(--pastille-marque));
+  }
+
+  /* Fond en pointillés (ecrans Cowork / Code). */
+  .bg-dotted {
+    background-image: radial-gradient(
+      hsl(var(--border)) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+  }
+}

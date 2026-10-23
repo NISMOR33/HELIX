@@ -1,0 +1,43 @@
+node_modules
+/work/
+dist
+dist-ssr
+*.local
+.DS_Store
+.vite
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+dist-gateway
+release
+
+# Paquets de l'extension VS Code (se refont avec vsce)
+*.vsix
+
+# Captures de référence du cadrage (autre produit) : gardées sur le poste, pas dans le dépôt.
+screenshots/
+
+# Clés et certificats : jamais dans le dépôt. La clé de l'éditeur vit dans ~/.helix-editeur (SIGNATURE.md),
+# ce filet rattrape une copie posée ici par erreur (audit du 27/09/2026).
+*.pem
+*.p12
+*.p8
+*.key
+.helix-editeur/
+.env
+.env.*
+
+# Données privées, sorties locales et modèles
+outputs/
+donnees/
+profil/
+modeles/
+.helix/
+helix.config.json
+config.local.json
+instance-token
+*.gguf
+*.safetensors
+*.ckpt
+*.log

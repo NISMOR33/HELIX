@@ -1,0 +1,217 @@
+{
+  "name": "helix-plateforme",
+  "nomAffiche": "Helix",
+  "depotMisesAJour": "NISMOR33/HELIX",
+  "private": true,
+  "version": "2026.1016.2",
+  "license": "AGPL-3.0-only",
+  "description": "Plateforme d'IA souveraine, locale et open source",
+  "desktopName": "helix-plateforme.desktop",
+  "author": {
+    "name": "Medhi Clabaut (Helix Agence, SIREN 994 907 145)",
+    "email": "contact@helix-agence.fr",
+    "url": "https://helix-agence.fr"
+  },
+  "type": "module",
+  "main": "electron/main.cjs",
+  "bin": {
+    "helix": "cli/helix.mjs"
+  },
+  "scripts": {
+    "essai:retouche": "node --test scripts/essai-retouche.mjs",
+    "essai:retouche:http": "node scripts/essai-retouche-http.mjs",
+    "essai:retouche:gpu": "node scripts/essai-retouche-gpu.mjs",
+    "dev": "vite",
+    "gateway": "node gateway/src/index.ts",
+    "app": "npm run build:gateway && electron .",
+    "package": "npm run build && electron-builder --publish never",
+    "build:gateway": "node scripts/modele-application.mjs && esbuild gateway/src/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist-gateway/index.cjs --external:pg-native && esbuild gateway/tools/motdepasse.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist-gateway/motdepasse.cjs --external:pg-native",
+    "build": "tsc --noEmit && npm run typecheck:gateway && vite build && npm run build:gateway",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit && npm run typecheck:gateway",
+    "i18n": "node scripts/i18n.mjs",
+    "i18n-passerelle": "node scripts/i18n-passerelle.mjs",
+    "securite": "node scripts/securite.mjs",
+    "essai:cli": "node scripts/essai-cli.mjs",
+    "essai:vscode": "node scripts/essai-vscode.mjs",
+    "essai:palmier": "node scripts/essai-palmier.mjs",
+    "essai:roblox-blender": "node scripts/essai-roblox-blender.mjs",
+    "essai:unreal-perso": "node scripts/essai-unreal-perso.mjs",
+    "essai:contexte": "node scripts/essai-contexte.mjs",
+    "essai:memoire": "node scripts/essai-memoire-conversation.mjs",
+    "essai:design": "node --experimental-strip-types scripts/essai-design.mjs",
+    "motdepasse": "node --experimental-strip-types gateway/tools/motdepasse.ts",
+    "typecheck:gateway": "tsc --noEmit -p tsconfig.gateway.json",
+    "package:signe": "node scripts/signature/construire.mjs",
+    "cle:editeur": "node scripts/signature/cle-editeur.mjs",
+    "verifier:signature": "node scripts/signature/verifier.mjs",
+    "test": "node --experimental-strip-types --test scripts/essai-retouche.mjs scripts/essai-maquette.mjs scripts/essai-chat-image.mjs",
+    "test:http": "node --experimental-strip-types scripts/essai-retouche-http.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "electron-updater": "^6.8.9",
+    "lucide-react": "^0.469.0",
+    "pngjs": "7.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.2"
+  },
+  "build": {
+    "appId": "fr.helix.plateforme",
+    "afterSign": "scripts/signature/signer-mise-a-jour.cjs",
+    "afterPack": "scripts/signature/cle-windows.cjs",
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false
+    },
+    "copyright": "Copyright © 2026 Medhi Clabaut — Helix Agence, SIREN 994 907 145",
+    "productName": "Helix",
+    "protocols": {
+      "name": "Invitation Helix",
+      "schemes": [
+        "helix"
+      ],
+      "role": "Viewer"
+    },
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-gateway/**/*",
+      "electron/**/*",
+      "build/icon.png",
+      "build/icon.ico",
+      "build/icons/512x512.png",
+      "build/tray.png",
+      "build/tray@2x.png"
+    ],
+    "extraResources": [
+      {
+        "from": "dist-gateway",
+        "to": "dist-gateway"
+      },
+      {
+        "from": "cli",
+        "to": "cli"
+      },
+      {
+        "from": "THIRD_PARTY_NOTICES.md",
+        "to": "THIRD_PARTY_NOTICES.md"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "extraResources": [
+        {
+          "from": "node_modules/electron/dist/LICENSE",
+          "to": "LICENSE.electron.txt"
+        },
+        {
+          "from": "node_modules/electron/dist/LICENSES.chromium.html",
+          "to": "LICENSES.chromium.html"
+        }
+      ],
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": false,
+      "extendInfo": {
+        "NSAppleEventsUsageDescription": "Helix pilote le clavier de votre Mac pour réaliser les actions que vous approuvez dans Cowork.",
+        "NSSystemAdministrationUsageDescription": "Helix a besoin de l'Accessibilité pour déplacer la souris et saisir au clavier, uniquement pour les actions que vous approuvez.",
+        "NSMicrophoneUsageDescription": "Helix utilise le micro pour la dictée et l'enregistrement des réunions. Le son est transcrit par votre instance, sans service extérieur."
+      },
+      "icon": "build/icon.png",
+      "artifactName": "${productName}-${version}-${arch}-mac.${ext}"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office",
+      "synopsis": "Plateforme d'IA locale et souveraine",
+      "syncDesktopName": true,
+      "icon": "build/icons"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "multiLanguageInstaller": true,
+      "installerLanguages": [
+        "fr_FR",
+        "en_US",
+        "zh_CN"
+      ],
+      "deleteAppDataOnUninstall": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "Helix-Setup-${version}-${arch}.${ext}"
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0",
+        "libatomic1",
+        "libgomp1",
+        "libdrm2",
+        "libgbm1",
+        "libasound2t64 | libasound2"
+      ],
+      "recommends": [
+        "python3",
+        "python3-venv",
+        "unzip"
+      ]
+    },
+    "toolsets": {
+      "appimage": "1.0.3",
+      "nsis": "1.2.1"
+    },
+    "dmg": {
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "@types/pngjs": "6.0.5",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "electron": "44.4.5",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.28.1",
+    "pdfjs-dist": "^6.3.289",
+    "pg": "^8.23.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NISMOR33/HELIX.git"
+  }
+}

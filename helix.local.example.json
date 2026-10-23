@@ -1,0 +1,15 @@
+{
+  "share": false,
+  "autoProvision": false,
+  "backends": [
+    {
+      "id": "lmstudio",
+      "enabled": true,
+      "baseUrl": "http://127.0.0.1:1234/v1"
+    },
+    {
+      "id": "exo",
+      "enabled": false
+    }
+  ]
+}
